@@ -6,15 +6,12 @@
     )] = List.create ();
     
     let compose_abilities = (message :: &String) -> Option.t[String] => with_return (
-        List.iter (
-            &abilities,
-            (ability) => (
-                let (.name, .processor) = ability^;
-                match processor (.text = message) with (
-                    | :Some reply => return :Some reply
-                    | :None => ()
-                );
-            )
+        for ability in List.iter &abilities do (
+            let (.name, .processor) = ability^;
+            match processor (.text = message) with (
+                | :Some reply => return :Some reply
+                | :None => ()
+            );
         );
         :None
     );

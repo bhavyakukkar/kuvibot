@@ -1,28 +1,10 @@
-module:
 use std.prelude.*;
 use std.net.tcp.Stream;
-
-@syntax "if_is" 10 wrap never = "if" " " value " " "is" " " pattern " " "then" " " body;
-impl syntax (if value is pattern then body) = `(
-    match $value with (
-        | $pattern => $body
-        | _ => ()
-    )
-);
-
-const Map = (include "./map.ks");
-
-const Option = (
-    module:
-    use std.Option.*;
-    const unwrap = [T] (opt :: t[T]) -> T => match opt with (
-        | :Some x => x
-        | :None => panic "unwrapped None"
-    )
-);
+use std.collections.Map;
 
 let channel = "kuviman";
 let username = "kuvibot";
+
 let token = std.fs.read_file ".secret/.access_token" |> String.trim;
 
 let mut stream = Stream.connect "irc.chat.twitch.tv:6667";
@@ -85,13 +67,9 @@ let rsplit_at = (s :: String, c :: Char) -> (String, String) => (
 
 let parse_tags = (s :: String) -> Map.t[String, String] => (
     let mut tags = Map.create ();
-    String.split (
-        s,
-        ';',
-        part => (
-            let key, value = String.split_once (part, '=');
-            Map.add (&mut tags, key, value);
-        ),
+    for part in String.split (s, ';') do (
+        let key, value = String.split_once (part, '=');
+        Map.add (&mut tags, key, value);
     );
     tags
 );
