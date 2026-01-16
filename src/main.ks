@@ -12,7 +12,6 @@ let read = () => (
     if String.at(s, String.length(s) - 1) != '\r' then (
         panic("where is my \\r????");
     );
-    
     String.substring(s, 0, String.length(s) - 1)
 );
 let writeln = (s :: String) => (
@@ -144,9 +143,9 @@ let on_message = (msg :: String, reply :: String -> ()) => with_return (
 );
 loop (
     let raw_msg = read();
-    # dbg.print raw_msg;
+    # dbg.print(.raw_msg);
     let msg = raw_msg |> parse_msg;
-    # dbg.print msg;
+    # dbg.print(.msg);
     if msg.command == "PING" then (
         writeln("PONG :tmi.twitch.tv")
     );

@@ -14,11 +14,29 @@
         overlays = [ ];
         pkgs = import inputs.nixpkgs { inherit system overlays; };
         kast = inputs.kast.packages.${system}.default;
-        package = pkgs.writeShellScriptBin "kuvibot" ''
-          set -e
-          ${pkgs.bash}/bin/bash ${./refresh.sh}
-          ${kast}/bin/kast run ${./src}/main.ks
-        '';
+        package = pkgs.stdenv.mkDerivation {
+          pname = "kuvibot";
+          version = "0.1.0";
+          src = ./.;
+          buildInputs = [ kast ];
+          buildPhase = ''
+            kast compile --target js --output target/main.mjs src/main.ks
+          '';
+          installPhase = ''
+            mkdir -p $out/bin
+            mkdir -p $out/lib
+            cp target/main.mjs $out/lib/main.mjs
+            cp refresh.sh $out/lib/refresh.sh
+            cat > $out/bin/kuvibot <<'EOF'
+            #!${pkgs.bash}/bin/bash
+            BIN="$(dirname "$0")"
+            set -e
+            . $BIN/../lib/refresh.sh
+            ${pkgs.nodejs}/bin/node $BIN/../lib/main.mjs
+            EOF
+            chmod +x $out/bin/kuvibot
+          '';
+        };
       in
       with pkgs; {
         apps.default = {
@@ -33,6 +51,7 @@
             '')
             rlwrap
             nixfmt-classic
+            nodejs
           ];
         };
       });
